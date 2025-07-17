@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: hestix-db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: hestix
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-keycloak.sql:/docker-entrypoint-initdb.d/init-keycloak.sql
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: hestix-keycloak
+    restart: always
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloakpassword
+    command: start-dev --hostname-strict=false --hostname localhost
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+  backend:
+    image: t1me0n/hestix-core-api:latest
+    container_name: hestix-backend
+    restart: always
+    environment:
+      DATABASE_URL: postgres://user:password@postgres:5432/hestix
+      DB_MAX_CONNECTIONS: 5
+      HOST: 0.0.0.0
+      PORT: 3000
+      LOG_FILTER: info
+      CORS_ALLOWED_ORIGIN: http://localhost:5173
+      FRONTEND_URL: http://localhost:5173
+
+      KEYCLOAK_BASE_URL: http://localhost:8080
+      KEYCLOAK_REALM: dev
+      KEYCLOAK_CLIENT_ID: hestix-backend
+      KEYCLOAK_CLIENT_SECRET: Kk4bdWfqYsFtQWOU1wtkjIUIYWoxvGUS
+      KEYCLOAK_REDIRECT_URI: http://localhost:3000/api/auth/callback
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - keycloak
+
+volumes:
+  postgres_data:
