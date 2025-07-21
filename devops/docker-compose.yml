@@ -26,7 +26,9 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: keycloak
       KC_DB_PASSWORD: keycloakpassword
-    command: start-dev --hostname-strict=false --hostname localhost
+      KC_HOSTNAME_URL: http://0.0.0.0:8080
+      KC_HOSTNAME_STRICT: false
+    command: start-dev
     ports:
       - "8080:8080"
     depends_on:
@@ -48,7 +50,8 @@ services:
       KEYCLOAK_BASE_URL: http://localhost:8080
       KEYCLOAK_REALM: dev
       KEYCLOAK_CLIENT_ID: hestix-backend
-      KEYCLOAK_CLIENT_SECRET: Kk4bdWfqYsFtQWOU1wtkjIUIYWoxvGUS
+      KEYCLOAK_CLIENT_SECRET: secret
+      KEYCLOAK_ALLOWED_AUDIENCES: "account,my-backend,web-client,mobile-client"
       KEYCLOAK_REDIRECT_URI: http://localhost:3000/api/auth/callback
     ports:
       - "3000:3000"
