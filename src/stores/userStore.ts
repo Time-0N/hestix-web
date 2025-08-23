@@ -8,37 +8,24 @@ export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null)
   const loading = ref(false)
 
+
   async function fetchUser() {
-    loading.value = true
+    loading.value = true;
     try {
-      user.value = await getCurrentUser()
-    } catch (e) {
-      console.error("Failed to fetch user:", e)
-      user.value = null
+      user.value = await getCurrentUser();
+    } catch {
+      user.value = null;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
-  async function login(): Promise<boolean> {
-    try {
-      loginService()
-      await fetchUser()
-      return user.value !== null
-    } catch (e) {
-      console.error("Login failed:", e)
-      return false
-    }
+  function login(): void {
+    loginService();          // no await/returns
   }
 
   async function logout() {
-    try {
-      await logoutService()
-    } catch (e) {
-      console.error("Logout failed:", e);
-    } finally {
-      user.value = null;
-    }
+    try { await logoutService(); } finally { user.value = null; }
   }
 
   const isAuthenticated = () => user.value !== null
